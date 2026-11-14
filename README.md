@@ -53,3 +53,4 @@
 The application will create the required database schema using Entity Framework Core migrations.
 
 **Note:** Each developer must configure their own database connection. Local database files and development secrets are not included in this repository.
+
