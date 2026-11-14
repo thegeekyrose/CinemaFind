@@ -1,0 +1,63 @@
+﻿@model CinemaFind.Models.ViewModels.AccountProfileViewModel
+
+@{
+    ViewData["Title"] = "My Account";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <h1 class="h3 fw-bold mb-4">
+                        My Account
+                    </h1>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ProfilePictureUrl))
+                    {
+                        <img src="@Model.ProfilePictureUrl"
+                             alt="Profile picture"
+                             class="rounded-circle mb-3"
+                             style="width: 100px; height: 100px; object-fit: cover;" />
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">
+                            Display Name
+                        </label>
+
+                        <p class="fw-semibold">
+                            @Model.DisplayName
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">
+                            Email Address
+                        </label>
+
+                        <p class="fw-semibold">
+                            @Model.Email
+                        </p>
+                    </div>
+
+                    <hr />
+
+                    <p class="text-muted small">
+                        Your account is managed by CinemaFind.
+                    </p>
+
+                    <a asp-controller="Movies"
+                       asp-action="Index"
+                       class="btn btn-outline-primary">
+                        Back to Movies
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

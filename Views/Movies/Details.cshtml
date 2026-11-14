@@ -1,0 +1,254 @@
+﻿@model CinemaFind.Models.ViewModels.MovieDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Film.Title;
+    var film = Model.Film;
+}
+
+<div class="container py-4">
+
+    <a asp-controller="Movies"
+       asp-action="Index"
+       class="btn btn-outline-secondary mb-4">
+        &larr; Back to Movies
+    </a>
+
+    @if (TempData["StatusMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["StatusMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <!-- Movie poster -->
+        <div class="col-12 col-md-4">
+
+            @if (!string.IsNullOrWhiteSpace(film.PosterUrl))
+            {
+                <img src="@film.PosterUrl"
+                     alt="Poster for @film.Title"
+                     class="img-fluid rounded shadow"
+                     style="width: 100%; max-height: 550px; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="bg-dark text-white rounded d-flex align-items-center justify-content-center"
+                     style="min-height: 350px;">
+                    <h2 class="text-center px-3">@film.Title</h2>
+                </div>
+            }
+
+        </div>
+
+        <!-- Movie information -->
+        <div class="col-12 col-md-8">
+
+            <h1 class="display-5 fw-bold">@film.Title</h1>
+
+            <p class="text-muted">
+                @(film.ReleaseDate?.ToString("yyyy") ?? "Release year unknown")
+
+                @if (film.RuntimeMinutes.HasValue)
+                {
+                    <span>· @film.RuntimeMinutes minutes</span>
+                }
+            </p>
+
+            <!-- Overall rating -->
+            <div class="mb-4">
+                <h2 class="h5">Community Rating</h2>
+
+                @if (Model.AverageRating.HasValue)
+                {
+                    <p class="mb-0">
+                        <strong>
+                            @Model.AverageRating.Value.ToString("0.0") / 10
+                        </strong>
+                        <span class="text-muted">
+                            (@Model.RatingCount ratings)
+                        </span>
+                    </p>
+                }
+                else
+                {
+                    <p class="text-muted">
+                        This movie has not been rated yet.
+                    </p>
+                }
+            </div>
+
+            <!-- Genres -->
+            <h2 class="h5 mt-4">Genres</h2>
+
+            @if (film.FilmGenres.Any())
+            {
+                @foreach (var link in film.FilmGenres)
+                {
+                    <span class="badge bg-secondary me-1">
+                        @link.Genre.Name
+                    </span>
+                }
+            }
+            else
+            {
+                <p class="text-muted">No genres assigned.</p>
+            }
+
+            <!-- Synopsis -->
+            <h2 class="h5 mt-4">Synopsis</h2>
+
+            <p>
+                @(string.IsNullOrWhiteSpace(film.Synopsis)
+                                ? "No synopsis available."
+                                : film.Synopsis)
+            </p>
+
+            <hr class="my-4" />
+
+            <!-- User rating -->
+            <h2 class="h4">Your Rating</h2>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                @if (Model.UserRating.HasValue)
+                {
+                    <p class="text-muted">
+                        Your current rating:
+                        <strong>@Model.UserRating / 10</strong>
+                    </p>
+                }
+                else
+                {
+                    <p class="text-muted">
+                        You haven't rated this movie yet.
+                    </p>
+                }
+
+                <form asp-controller="UserActivity"
+                      asp-action="RateMovie"
+                      method="post"
+                      class="mb-4">
+
+                    <input type="hidden"
+                           name="FilmId"
+                           value="@film.Id" />
+
+                    <label for="Score" class="form-label">
+                        Select your rating
+                    </label>
+
+                    <div class="d-flex gap-2">
+                        <select name="Score"
+                                id="Score"
+                                class="form-select"
+                                style="max-width: 120px;"
+                                required>
+
+                            <option value="">Rating</option>
+
+                            @for (int score = 1; score <= 10; score++)
+                            {
+                                if (Model.UserRating == score)
+                                {
+                                    <option value="@score" selected>
+                                        @score / 10
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@score">
+                                        @score / 10
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Save Rating
+                        </button>
+                    </div>
+
+                </form>
+
+                <hr class="my-4" />
+
+                <!-- Viewing history -->
+                <h2 class="h4">Viewing Progress</h2>
+
+                @if (Model.HasViewingHistory)
+                {
+                    <p class="text-muted">
+                        Your recorded progress:
+                        <strong>
+                            @(Model.ViewingProgress ?? 0)%
+                        </strong>
+                    </p>
+                }
+                else
+                {
+                    <p class="text-muted">
+                        You haven't recorded viewing progress for this movie.
+                    </p>
+                }
+
+                <form asp-controller="UserActivity"
+                      asp-action="SaveViewingProgress"
+                      method="post">
+
+                    <input type="hidden"
+                           name="FilmId"
+                           value="@film.Id" />
+
+                    <label for="Progress" class="form-label">
+                        Viewing progress (%)
+                    </label>
+
+                    <div class="d-flex gap-2">
+                        <input type="number"
+                               name="Progress"
+                               id="Progress"
+                               class="form-control"
+                               style="max-width: 120px;"
+                               min="0"
+                               max="100"
+                               step="1"
+                               value="@(Model.ViewingProgress ?? 0)"
+                               required />
+
+                        <button type="submit"
+                                class="btn btn-success">
+                            Save Progress
+                        </button>
+                    </div>
+
+                    <small class="text-muted">
+                        Set progress to 100% to mark the movie as completed.
+                    </small>
+
+                </form>
+            }
+            else
+            {
+                <p class="text-muted">
+                    <a asp-area="Identity"
+                       asp-page="/Account/Login">
+                        Sign in
+                    </a>
+                    to rate this movie and track your viewing progress.
+                </p>
+            }
+
+        </div>
+    </div>
+</div>
